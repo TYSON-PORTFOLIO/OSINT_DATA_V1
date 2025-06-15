@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>QUANTUM//VAULT | System Boot</title>
+    <style>
+        :root {
+            --primary-blue: #00a2ff;
+            --neon-blue: #00f7ff;
+            --deep-blue: #001a33;
+            --matrix-blue: #00ffaa;
+            --dark-bg: #0a0a1a;
+            --terminal-text: #e0e0ff;
+            --glow-effect: 0 0 10px rgba(0, 247, 255, 0.7);
+            --panel-bg: rgba(0, 26, 51, 0.8);
+            --error-red: #ff3366;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', 'Fira Code', monospace;
+        }
+
+        @font-face {
+            font-family: 'Fira Code';
+            src: url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&display=swap');
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--terminal-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            padding: 20px;
+        }
+
+        .cyber-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 162, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 162, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .scanlines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                rgba(0, 0, 0, 0) 50%,
+                rgba(0, 247, 255, 0.02) 50%
+            );
+            background-size: 100% 3px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glitch-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.1"/></svg>');
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            z-index: 2;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--panel-bg);
+            border: 2px solid var(--primary-blue);
+            box-shadow: 0 0 20px rgba(0, 162, 255, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: conic-gradient(
+                transparent,
+                var(--matrix-blue),
+                transparent
+            );
+            animation: rotate 3s linear infinite;
+        }
+
+        .logo-inner {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--dark-bg);
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--neon-blue);
+            text-shadow: var(--glow-effect);
+        }
+
+        .logo-name {
+            margin-top: 10px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--terminal-text);
+            text-shadow: 0 0 10px var(--primary-blue);
+            text-transform: uppercase;
+        }
+
+        .logo-subtitle {
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            color: var(--matrix-blue);
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: var(--neon-blue);
+            text-shadow: var(--glow-effect);
+            letter-spacing: 1px;
+        }
+
+        .terminal-container {
+            width: 100%;
+            max-width: 600px;
+            height: 250px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--primary-blue);
+            box-shadow: 
+                0 0 20px rgba(0, 162, 255, 0.3),
+                inset 0 0 15px rgba(0, 162, 255, 0.2);
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .terminal-output {
+            height: calc(100% - 30px);
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .terminal-output::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .terminal-output::-webkit-scrollbar-thumb {
+            background-color: var(--primary-blue);
+            border-radius: 3px;
+        }
+
+        .command-line {
+            display: flex;
+            margin-top: 10px;
+            font-size: 0.8rem;
+        }
+
+        .prompt {
+            color: var(--matrix-blue);
+            margin-right: 8px;
+        }
+
+        .cursor {
+            animation: blink 1s infinite;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.7rem;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background-color: rgba(0, 162, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-blue), var(--matrix-blue));
+            position: relative;
+            animation: progress-load 14s linear forwards;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            animation: shine 2s infinite;
+        }
+
+        .status-indicators {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.65rem;
+            min-width: 70px;
+        }
+
+        .status-light {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-right: 6px;
+            background-color: var(--matrix-blue);
+            box-shadow: 0 0 5px var(--matrix-blue);
+            animation: pulse 1.5s infinite;
+        }
+
+        .error .status-light {
+            background-color: var(--error-red);
+            box-shadow: 0 0 5px var(--error-red);
+        }
+
+        .warning .status-light {
+            background-color: #ffcc00;
+            box-shadow: 0 0 5px #ffcc00;
+        }
+
+        .hex-data {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 15px,
+                rgba(0, 247, 255, 0.1) 15px,
+                rgba(0, 247, 255, 0.1) 30px
+            );
+            font-size: 0.5rem;
+            color: rgba(0, 247, 255, 0.5);
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .network-alert {
+            position: absolute;
+            bottom: -50px;
+            left: 0;
+            width: 100%;
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--error-red);
+            padding: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-top: 1px solid var(--error-red);
+            transition: bottom 0.5s ease;
+        }
+
+        .solution-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(0, 162, 255, 0.1);
+            border-left: 3px solid var(--matrix-blue);
+            font-size: 0.7rem;
+            line-height: 1.5;
+            display: none;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .solution-box h3 {
+            color: var(--matrix-blue);
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        @keyframes progress-load {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .binary-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .binary-column {
+            position: absolute;
+            top: 0;
+            width: 1em;
+            font-size: 12px;
+            color: var(--matrix-blue);
+            text-shadow: 0 0 5px var(--matrix-blue);
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            animation: binary-fall linear infinite;
+        }
+
+        @keyframes binary-fall {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+                justify-content: flex-start;
+            }
+            
+            .logo {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .logo-inner {
+                width: 42px;
+                height: 42px;
+                font-size: 1rem;
+            }
+            
+            .logo-name {
+                font-size: 1.2rem;
+                margin-top: 8px;
+            }
+            
+            .logo-subtitle {
+                font-size: 0.5rem;
+                letter-spacing: 2px;
+            }
+            
+            .terminal-container {
+                height: 200px;
+                padding: 12px;
+            }
+            
+            .terminal-output {
+                font-size: 0.7rem;
+            }
+            
+            .command-line {
+                font-size: 0.7rem;
+            }
+            
+            .status-indicators {
+                gap: 8px;
+            }
+            
+            .status-item {
+                font-size: 0.6rem;
+                min-width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <div class="scanlines"></div>
+    <div class="glitch-effect"></div>
+    <div class="binary-rain" id="binaryRain"></div>
+
+    <div class="logo-container">
+        <div class="logo">
+            <div class="logo-inner">QV</div>
+        </div>
+        <div class="logo-name"> TYSON OSINT TOOL </div>
+        <div class="logo-subtitle">SYSTEM BOOT</div>
+    </div>
+
+    <div class="terminal-header">
+        <span>SYSTEM INITIALIZATION</span>
+        <span id="currentTime">[SYSTEM TIME]</span>
+    </div>
+
+    <div class="terminal-container">
+        <div class="terminal-output" id="terminalOutput">
+<span style="color: var(--matrix-blue)">> Initializing QUANTUM//VAULT subsystems...</span>
+<span style="color: var(--neon-blue)">> Checking crypto-links... [OK]</span>
+<span style="color: var(--neon-blue)">> Verifying neural network... [OK]</span>
+<span style="color: var(--neon-blue)">> Loading quantum encryption modules...</span>
+        </div>
+        <div class="command-line">
+            <span class="prompt">root@quantumvault:~#</span>
+            <span id="typingText"></span>
+            <span class="cursor">_</span>
+        </div>
+        <div class="hex-data" id="hexData"></div>
+        <div class="network-alert" id="networkAlert"></div>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-header">
+            <span>Secure Connection Progress</span>
+            <span id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+
+    <div class="solution-box" id="solutionBox">
+        <h3>NETWORK SOLUTION:</h3>
+        <p>1. Turn off your internet connection<br>
+        2. Wait for 10 seconds<br>
+        3. Turn your internet back on<br>
+        4. Refresh this page to reconnect</p>
+    </div>
+
+    <div class="status-indicators">
+        <div class="status-item">
+            <div class="status-light"></div>
+            <span>Firewall</span>
+        </div>
+        <div class="status-item">
+            <div class="status-light"></div>
+            <span>Encryption</span>
+        </div>
+        <div class="status-item" id="networkStatus">
+            <div class="status-light"></div>
+            <span>Network</span>
+        </div>
+        <div class="status-item">
+            <div class="status-light"></div>
+            <span>Database</span>
+        </div>
+        <div class="status-item" id="apiStatus">
+            <div class="status-light"></div>
+            <span>API</span>
+        </div>
+    </div>
+
+    <script>
+        // Create binary rain
+        const binaryRain = document.getElementById('binaryRain');
+        const chars = ['0', '1', '0', '1', '0', '1', '0', '1', '0', '1', '0', '1', '0', '1'];
+        
+        for (let i = 0; i < 30; i++) {
+            const column = document.createElement('div');
+            column.className = 'binary-column';
+            column.style.left = `${Math.random() * 100}%`;
+            column.style.animationDuration = `${Math.random() * 5 + 5}s`;
+            column.style.animationDelay = `${Math.random() * 5}s`;
+            
+            let binaryText = '';
+            for (let j = 0; j < 50; j++) {
+                binaryText += chars[Math.floor(Math.random() * chars.length)] + '\n';
+            }
+            
+            column.textContent = binaryText;
+            binaryRain.appendChild(column);
+        }
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {hour12: false});
+            document.getElementById('currentTime').textContent = `[${timeString}]`;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Terminal typing effect
+        const terminalOutput = document.getElementById('terminalOutput');
+        const typingText = document.getElementById('typingText');
+        const commands = [
+            'init --secure --quantum',
+            'scan --network --deep',
+            'encrypt --level=256',
+            'connect --vpn --tor',
+            'ping darknet.nodes'
+        ];
+        
+        let currentCommand = 0;
+        let charIndex = 0;
+        let isDeleting = false;
+        
+        function typeCommand() {
+            const currentText = commands[currentCommand];
+            
+            if (isDeleting) {
+                typingText.textContent = currentText.substring(0, charIndex - 1);
+                charIndex--;
+                
+                if (charIndex === 0) {
+                    isDeleting = false;
+                    currentCommand = (currentCommand + 1) % commands.length;
+                    setTimeout(typeCommand, 500);
+                } else {
+                    setTimeout(typeCommand, 50);
+                }
+            } else {
+                typingText.textContent = currentText.substring(0, charIndex + 1);
+                charIndex++;
+                
+                if (charIndex === currentText.length) {
+                    isDeleting = true;
+                    setTimeout(typeCommand, 1000);
+                    
+                    // Add command to output
+                    const newLine = document.createElement('div');
+                    newLine.style.color = 'var(--matrix-blue)';
+                    newLine.textContent = `> ${currentText}`;
+                    terminalOutput.appendChild(newLine);
+                    
+                    // Add response
+                    setTimeout(() => {
+                        const response = document.createElement('div');
+                        response.style.color = 'var(--neon-blue)';
+                        
+                        if (Math.random() > 0.3) {
+                            response.textContent = `[OK] ${Math.floor(Math.random() * 1000)}ms`;
+                        } else {
+                            response.textContent = `[ERROR] 0x${Math.floor(Math.random() * 10000).toString(16)}`;
+                            response.style.color = 'var(--error-red)';
+                        }
+                        
+                        terminalOutput.appendChild(response);
+                        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                    }, 300);
+                } else {
+                    setTimeout(typeCommand, 100);
+                }
+            }
+        }
+        
+        setTimeout(typeCommand, 1500);
+
+        // Progress bar (14 seconds total)
+        const progressPercent = document.getElementById('progressPercent');
+        let progress = 0;
+        
+        const progressInterval = setInterval(() => {
+            progress += 1;
+            progressPercent.textContent = `${progress}%`;
+            
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+            }
+        }, 140); // 140ms * 100 = 14,000ms (14 seconds)
+
+        // Hex data animation
+        const hexData = document.getElementById('hexData');
+        const hexChars = '0123456789ABCDEF';
+        let hexString = '';
+        
+        function updateHexData() {
+            // Add new hex byte
+            if (hexString.length < 200) {
+                hexString += hexChars[Math.floor(Math.random() * 16)] + 
+                            hexChars[Math.floor(Math.random() * 16)] + ' ';
+            } else {
+                hexString = hexString.substring(3) + 
+                            hexChars[Math.floor(Math.random() * 16)] + 
+                            hexChars[Math.floor(Math.random() * 16)] + ' ';
+            }
+            
+            hexData.textContent = hexString;
+        }
+        
+        setInterval(updateHexData, 50);
+
+        // Add more terminal lines periodically
+        const terminalMessages = [
+            "> Establishing secure tunnel...",
+            "> Bypassing firewall restrictions...",
+            "> Encrypting data streams...",
+            "> Connecting to dark nodes...",
+            "> Verifying blockchain hashes...",
+            "> ERROR: Connection timeout (node 0x4F2A)",
+            "> WARNING: Suspicious activity detected",
+            "> Rerouting through proxy chain...",
+            "> Authentication complete"
+        ];
+        
+        setInterval(() => {
+            if (Math.random() > 0.3) {
+                const newLine = document.createElement('div');
+                newLine.style.color = Math.random() > 0.7 ? 'var(--error-red)' : 
+                                     Math.random() > 0.5 ? 'var(--matrix-blue)' : 'var(--neon-blue)';
+                newLine.textContent = terminalMessages[Math.floor(Math.random() * terminalMessages.length)];
+                terminalOutput.appendChild(newLine);
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        }, 1500);
+
+        // Network alerts
+        const networkAlert = document.getElementById('networkAlert');
+        const solutionBox = document.getElementById('solutionBox');
+        const networkStatus = document.getElementById('networkStatus');
+        const apiStatus = document.getElementById('apiStatus');
+
+        // Show slow internet after 7 seconds
+        setTimeout(() => {
+            networkAlert.textContent = "WARNING: SLOW NETWORK CONNECTION DETECTED";
+            networkAlert.style.bottom = "0";
+            networkAlert.style.background = "rgba(255, 204, 0, 0.2)";
+            networkAlert.style.color = "#ffcc00";
+            networkAlert.style.borderTop = "1px solid #ffcc00";
+            
+            networkStatus.classList.add('warning');
+            
+            // Add to terminal
+            const newLine = document.createElement('div');
+            newLine.style.color = '#ffcc00';
+            newLine.textContent = "> WARNING: Network latency exceeding thresholds (782ms)";
+            terminalOutput.appendChild(newLine);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }, 7000);
+
+        // Show no internet after 10 seconds
+        setTimeout(() => {
+            networkAlert.textContent = "CRITICAL: NETWORK CONNECTION LOST";
+            networkAlert.style.background = "rgba(255, 51, 102, 0.2)";
+            networkAlert.style.color = "var(--error-red)";
+            networkAlert.style.borderTop = "1px solid var(--error-red)";
+            
+            networkStatus.classList.remove('warning');
+            networkStatus.classList.add('error');
+            apiStatus.classList.add('error');
+            
+            // Show solution box
+            solutionBox.style.display = "block";
+            
+            // Add to terminal
+            const newLine = document.createElement('div');
+            newLine.style.color = 'var(--error-red)';
+            newLine.textContent = "> CRITICAL ERROR: Network connection lost (0xFA3B)";
+            terminalOutput.appendChild(newLine);
+            
+            const newLine2 = document.createElement('div');
+            newLine2.style.color = 'var(--matrix-blue)';
+            newLine2.textContent = "> Attempting to reconnect...";
+            terminalOutput.appendChild(newLine2);
+            
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }, 10000);
+    </script>
+</body>
+</html>

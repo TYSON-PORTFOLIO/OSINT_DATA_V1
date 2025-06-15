@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Advisory</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Orbitron:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dark-blue: #0a192f;
+            --navy-blue: #172a45;
+            --light-blue: #64ffda;
+            --accent: #1e90ff;
+            --text: #ccd6f6;
+            --text-light: #8892b0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--dark-blue);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Simplified Background */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(135deg, var(--dark-blue) 0%, var(--navy-blue) 100%);
+            z-index: -1;
+        }
+
+        .advisory-container {
+            width: 90%;
+            max-width: 800px;
+            min-height: auto;
+            background: rgba(23, 42, 69, 0.9);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.95);
+            animation: fadeInScale 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(30, 144, 255, 0.2);
+            margin: 20px 0;
+        }
+        
+        @keyframes fadeInScale {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .warning-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .warning-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--light-blue) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--navy-blue);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+        
+        .warning-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            font-size: 20px;
+            color: var(--light-blue);
+            letter-spacing: 1px;
+            text-align: center;
+            margin: 0;
+            position: relative;
+        }
+        
+        .warning-title::after {
+            content: "";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background: var(--light-blue);
+            animation: lineExpand 0.8s ease-out forwards;
+        }
+        
+        @keyframes lineExpand {
+            from { width: 0%; }
+            to { width: 60px; }
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .language-panel {
+            background: rgba(23, 42, 69, 0.7);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(30, 144, 255, 0.2);
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s 0.4s forwards;
+            min-height: 250px;
+        }
+        
+        .language-panel:nth-child(2) {
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .language-panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--accent), var(--light-blue));
+        }
+        
+        .language-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
+            font-size: 15px;
+            color: var(--light-blue);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .message {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-light);
+            margin: 0;
+        }
+        
+        .highlight {
+            color: var(--text);
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .highlight::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: var(--light-blue);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+        
+        .highlight:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-light);
+            opacity: 0;
+            animation: fadeIn 0.6s 0.8s forwards;
+            margin-top: 10px;
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .advisory-container {
+                margin: 10px 0;
+                padding: 15px;
+            }
+            
+            .language-panel {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="advisory-container">
+        <div class="warning-header">
+            <div class="warning-icon">⚠️</div>
+            <h1 class="warning-title">IMPORTANT NOTICE</h1>
+        </div>
+        
+        <div class="content-grid">
+            <div class="language-panel">
+                <h2 class="language-title">ENGLISH</h2>
+                <p class="message">
+                    When you create a new account through the hack link in this game, your hack will provide <span class="highlight">more accurate results</span> and you will receive <span class="highlight">more bonuses</span>. Additionally, you <span class="highlight">won't face any issues</span> with deposits or withdrawals. 
+                    <br><br>
+                    Therefore, I <span class="highlight">highly recommend</span> that you create a new account.
+                    <br><br>
+                    <span class="highlight">Professional gamers</span> consistently use fresh accounts to unlock premium features and maximize their earnings potential!
+                </p>
+            </div>
+            
+            <div class="language-panel">
+                <h2 class="language-title">हिंदी</h2>
+                <p class="message">
+                    जब आप इस गेम में हैक लिंक के माध्यम से एक नया अकाउंट बनाते हैं, तो आपका हैक <span class="highlight">अधिक सटीक परिणाम</span> देगा और आपको <span class="highlight">अधिक बोनस</span> मिलेंगे। साथ ही, आपको जमा या निकासी में <span class="highlight">कोई समस्या</span> नहीं आएगी।
+                    <br><br>
+                    इसलिए, मैं <span class="highlight">अत्यधिक सलाह</span> देता हूं कि आप एक नया अकाउंट बनाएं।
+                    <br><br>
+                    <span class="highlight">पेशेवर गेमर्स</span> प्रीमियम सुविधाओं को अनलॉक करने और अपनी कमाई को अधिकतम करने के लिए हमेशा नए अकाउंट का उपयोग करते हैं!
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+             Made By @EarningScripter1
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if content overflows and enable scroll if needed
+            const container = document.querySelector('.advisory-container');
+            const checkOverflow = () => {
+                if (container.scrollHeight > window.innerHeight) {
+                    container.style.overflowY = 'auto';
+                } else {
+                    container.style.overflowY = 'hidden';
+                }
+            };
+
+            // Initial check
+            checkOverflow();
+
+            // Responsive adjustments
+            window.addEventListener('resize', checkOverflow);
+        });
+    </script>
+</body>
+</html>

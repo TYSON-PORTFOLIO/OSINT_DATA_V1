@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WINGO DATA CAPTURE</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #000;
+            font-family: 'Courier New', monospace;
+            user-select: none;
+        }
+
+        .hack-container {
+            height: 150px;
+            width: 100%;
+            position: relative;
+            background: #000;
+            overflow: hidden;
+            border-bottom: 1px solid #00ffaa;
+        }
+
+        /* Initial Content */
+        .content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            transition: opacity 0.5s;
+        }
+
+        /* Data Stream */
+        .data-stream {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.5;
+            transition: opacity 0.5s;
+        }
+
+        .data-bit {
+            position: absolute;
+            color: #00ffaa;
+            font-size: 12px;
+            animation: fall linear forwards;
+            font-weight: bold;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(150px); opacity: 0; }
+        }
+
+        /* Header */
+        .wingo-header {
+            color: #ff9900;
+            font-size: 16px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 5px #ff9900;
+        }
+
+        /* Status Text */
+        .status-text {
+            color: #00ffaa;
+            font-size: 12px;
+            margin: 3px 0;
+            white-space: nowrap;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 3px;
+            background: rgba(0, 255, 170, 0.1);
+            margin: 5px 0;
+            position: absolute;
+            bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00ffaa, #00aaff);
+            box-shadow: 0 0 5px #00ffaa;
+            transition: width 0.1s linear;
+        }
+
+        /* Console */
+        .console {
+            position: absolute;
+            bottom: 25px;
+            left: 10px;
+            right: 10px;
+            height: 60px;
+            overflow: hidden;
+            font-size: 10px;
+            color: #00ffaa;
+        }
+
+        .console-line {
+            margin: 2px 0;
+            white-space: nowrap;
+        }
+
+        /* Success Celebration */
+        .success-celebration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .success-celebration.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .success-text {
+            font-size: 36px;
+            font-weight: bold;
+            color: #00ffaa;
+            text-shadow: 0 0 15px #00ffaa;
+            animation: 
+                pulse 0.8s infinite alternate,
+                float 3s ease-in-out infinite;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #00ffaa;
+            opacity: 0;
+            animation: 
+                confettiFall 3s linear forwards,
+                confettiFade 3s linear forwards;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); text-shadow: 0 0 15px #00ffaa; }
+            100% { transform: scale(1.1); text-shadow: 0 0 30px #00ffaa, 0 0 15px #00aaff; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes confettiFall {
+            to { transform: translateY(150px) rotate(360deg); }
+        }
+
+        @keyframes confettiFade {
+            0% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hack-container">
+        <!-- Data Stream -->
+        <div class="data-stream" id="dataStream"></div>
+        
+        <!-- Main Content -->
+        <div class="content" id="content">
+            <div class="wingo-header">WINGO GAME DATA CAPTURE</div>
+            <div class="status-text" id="statusText">Initializing data transfer...</div>
+            
+            <div class="console" id="console">
+                <div class="console-line">> System ready</div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        
+        <!-- Success Celebration -->
+        <div class="success-celebration" id="successCelebration">
+            <div class="success-text">SUCCESS</div>
+        </div>
+    </div>
+
+    <script>
+        // Elements
+        const dataStream = document.getElementById('dataStream');
+        const content = document.getElementById('content');
+        const statusText = document.getElementById('statusText');
+        const consoleElement = document.getElementById('console');
+        const progressBar = document.getElementById('progressBar');
+        const successCelebration = document.getElementById('successCelebration');
+        
+        // Game data characters
+        const gameChars = "0123456789$¢€£¥■▲◆★♠♣♥♦WINGO";
+        
+        // Spawn falling data bits
+        function spawnDataBit() {
+            const bit = document.createElement('div');
+            bit.className = 'data-bit';
+            bit.textContent = gameChars[Math.floor(Math.random() * gameChars.length)];
+            bit.style.left = Math.random() * 100 + '%';
+            bit.style.top = -10 + 'px';
+            bit.style.animationDuration = (Math.random() * 1 + 0.5) + 's';
+            bit.style.opacity = Math.random() * 0.5 + 0.3;
+            bit.style.color = `hsl(${Math.random() * 60 + 120}, 100%, ${Math.random() * 30 + 50}%)`;
+            dataStream.appendChild(bit);
+            
+            setTimeout(() => bit.remove(), 1500);
+        }
+        
+        // Start data animation
+        const dataInterval = setInterval(spawnDataBit, 50);
+        
+        // Console messages
+        const messages = [
+            "> Connecting to Wingo servers...",
+            "> Authenticating session...",
+            "> Locating player data...",
+            "> Establishing secure channel...",
+            "> Beginning data transfer...",
+            "> Capturing game statistics..."
+        ];
+        
+        let messageIndex = 0;
+        const messageInterval = setInterval(() => {
+            if (messageIndex < messages.length) {
+                const line = document.createElement('div');
+                line.className = 'console-line';
+                line.textContent = messages[messageIndex];
+                consoleElement.appendChild(line);
+                
+                // Scroll to bottom
+                consoleElement.scrollTop = consoleElement.scrollHeight;
+                messageIndex++;
+            }
+        }, 600);
+        
+        // Update status text
+        statusText.textContent = "Capturing Wingo game data...";
+        
+        // Progress bar animation (4 seconds total)
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 1;
+            progressBar.style.width = progress + '%';
+            
+            if (progress >= 100) {
+                clearInterval(progressInterval);
+                showSuccess();
+            }
+        }, 40);
+        
+        // Create confetti
+        function createConfetti() {
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.top = -10 + 'px';
+                confetti.style.background = `hsl(${Math.random() * 60 + 120}, 100%, 50%)`;
+                confetti.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                confetti.style.width = (Math.random() * 8 + 4) + 'px';
+                confetti.style.height = (Math.random() * 8 + 4) + 'px';
+                successCelebration.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+        
+        // Show success celebration
+        function showSuccess() {
+            // Hide all content
+            content.style.opacity = 0;
+            dataStream.style.opacity = 0;
+            
+            // Clear intervals
+            clearInterval(dataInterval);
+            clearInterval(messageInterval);
+            
+            // Show celebration
+            setTimeout(() => {
+                successCelebration.classList.add('active');
+                createConfetti();
+                
+                // Keep creating confetti
+                setInterval(createConfetti, 300);
+            }, 500);
+        }
+        
+        // Prevent scrolling
+        document.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
+        document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    </script>
+</body>
+</html>
